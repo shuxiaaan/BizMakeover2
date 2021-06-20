@@ -1,7 +1,7 @@
-name: "BizMakeover2"
-title: "My Blog"
+name: "Li Shuxian"
+title: "BizMakeover2"
 description: |
-  My Blog
+  
 output_dir: "_site"
 navbar:
   right:
