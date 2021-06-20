@@ -272,6 +272,6 @@ For a clearer graph, please click the link on Tableau Public [here.](https://pub
 ![](image/54.png)
 
 
-3.	**Thailand: ** Starting from January 2011, Thailand has an average performance of their net export values till September 2019. The performance increased to $1.4 billion from September 2019 to March 2020. However, the following month in April 2020, there was a noticeable drop to -$5.6 million.
+3.	**Thailand: ** Starting from January 2011, Thailand has an average performance of their net export values till September 2019. The performance increased to $1.4 billion from September 2019 to March 2020. However, the following month in April 2020, there was a noticeable drop to -$5.6 million. 
 
 ![](image/55.png)
