@@ -1,0 +1,76 @@
+---
+title: "Vast 2021 MC 3"
+description: |
+  A short description of the post.
+author:
+  - name: Li Shuxian
+    url: https://example.com/norajones
+date: 07-14-2021
+output:
+  distill::distill_article:
+    self_contained: false
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+Distill is a publication format for scientific and technical writing, native to the web.
+
+Learn more about using Distill at <https://rstudio.github.io/distill>.
+
+```{r}
+#import packages
+
+packages= c()
+
+packages = c('DT','tidytext','widyr','dplyr','wordcloud',
+             'ggwordcloud','textplot','lubridate','hms','tidyverse','tidygraph',
+             'ggraph','igraph','LDAvis','servr','dplyr','stringi',
+             'raster','sf','clock','tmap','data.table','textclean','tm',
+             'wordcloud','wordcloud2','text2vec','topicmodels','tidytext',
+             'textmineR','quanteda','BTM','textplot','concaveman','ggwordcloud',
+             'qdapDictionaries','textstem','devtools','ggiraph',
+             'plotly','igraph', 'tidygraph','visNetwork','udpipe','grid')
+
+for (p in packages){
+  if (!require(p,character.only = T)){
+    install.packages(p)    
+  }
+  library(p,character.only = T)
+}
+```
+
+```{r,echo=TRUE,eval=TRUE}
+segment1 <- read_csv('H:/jovina7/BizMakeover2/_posts/2021-07-14-vast-2021-mc-3/data/csv-1700-1830.csv')
+segment2 <- read_csv('H:/jovina7/BizMakeover2/_posts/2021-07-14-vast-2021-mc-3/data/csv-1831-2000.csv')
+segment3 <-read_csv('H:/jovina7/BizMakeover2/_posts/2021-07-14-vast-2021-mc-3/data/csv-2001-2131.csv')
+```
+
+```{r,echo=TRUE,eval=TRUE}
+#combine all these 3 segments data together 
+raw_text <- rbind(segment1,segment2,segment3)
+```
+
+```{r,echo=TRUE,eval=TRUE}
+#Wrangling time
+raw_text$`date(yyyyMMddHHmmss)`<-ymd_hms(raw_text$`date(yyyyMMddHHmmss)`)
+```
+
+```{r,echo=TRUE,eval=TRUE}
+#clean data
+raw_text$clean_message <-raw_text$message%>%
+  tolower()%>%#change all messages to lowercase
+  replace_contraction()%>%#remove short form
+  replace_word_elongation()%>% #remove the same letter appears unnecessarily, eg.'loooook' to 'look'
+  str_squish()%>% #removes space from start and end of string
+  lemmatize_strings()#perform lemmatization
+```
+
+```{r,echo=TRUE,eval=TRUE}
+#eliminate messages that start with rt @
+clean_text <- raw_text %>%
+  filter(str_detect(clean_message,"^[^rt @]"))
+```
+

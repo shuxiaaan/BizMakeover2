@@ -1,5 +1,22 @@
 [
   {
+    "path": "posts/2021-07-14-vast-2021-mc-3/",
+    "title": "Vast 2021 MC 3",
+    "description": "A short description of the post.",
+    "author": [
+      {
+        "name": "Li Shuxian",
+        "url": "https://example.com/norajones"
+      }
+    ],
+    "date": "2021-07-14",
+    "categories": [],
+    "contents": "\r\nDistill is a publication format for scientific and technical writing, native to the web.\r\nLearn more about using Distill at https://rstudio.github.io/distill.\r\n\r\n\r\n\r\n\r\n\r\nsegment1 <- read_csv('H:/jovina7/BizMakeover2/_posts/2021-07-14-vast-2021-mc-3/data/csv-1700-1830.csv')\r\nsegment2 <- read_csv('H:/jovina7/BizMakeover2/_posts/2021-07-14-vast-2021-mc-3/data/csv-1831-2000.csv')\r\nsegment3 <-read_csv('H:/jovina7/BizMakeover2/_posts/2021-07-14-vast-2021-mc-3/data/csv-2001-2131.csv')\r\n\r\n\r\n\r\n\r\n\r\n#combine all these 3 segments data together \r\nraw_text <- rbind(segment1,segment2,segment3)\r\n\r\n\r\n\r\n\r\n\r\n#Wrangling time\r\nraw_text$`date(yyyyMMddHHmmss)`<-ymd_hms(raw_text$`date(yyyyMMddHHmmss)`)\r\n\r\n\r\n\r\n\r\n\r\n#clean data\r\nraw_text$clean_message <-raw_text$message%>%\r\n  tolower()%>%#change all messages to lowercase\r\n  replace_contraction()%>%#remove short form\r\n  replace_word_elongation()%>% #remove the same letter appears unnecessarily, eg.'loooook' to 'look'\r\n  str_squish()%>% #removes space from start and end of string\r\n  lemmatize_strings()#perform lemmatization\r\n\r\n\r\n\r\n\r\n\r\n#eliminate messages that start with rt @\r\nclean_text <- raw_text %>%\r\n  filter(str_detect(clean_message,\"^[^rt @]\"))\r\n\r\n\r\n\r\n\r\n\r\n\r\n",
+    "preview": {},
+    "last_modified": "2021-07-21T15:43:40+08:00",
+    "input_file": "vast-2021-mc-3.knit.md"
+  },
+  {
     "path": "posts/welcome/",
     "title": "Welcome to BizMakeover 2",
     "description": {},
