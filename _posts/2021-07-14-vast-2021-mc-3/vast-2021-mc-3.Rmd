@@ -32,7 +32,8 @@ packages = c('DT','tidytext','widyr','dplyr','wordcloud',
              'wordcloud','wordcloud2','text2vec','topicmodels','tidytext',
              'textmineR','quanteda','BTM','textplot','concaveman','ggwordcloud',
              'qdapDictionaries','textstem','devtools','ggiraph',
-             'plotly','igraph', 'tidygraph','visNetwork','udpipe','grid')
+             'plotly','igraph', 'tidygraph','visNetwork','udpipe','grid',
+             'SnowballC','proustr')
 
 for (p in packages){
   if (!require(p,character.only = T)){
@@ -59,18 +60,133 @@ raw_text$`date(yyyyMMddHHmmss)`<-ymd_hms(raw_text$`date(yyyyMMddHHmmss)`)
 ```
 
 ```{r,echo=TRUE,eval=TRUE}
-#clean data
+#1.clean data,raw_text
 raw_text$clean_message <-raw_text$message%>%
   tolower()%>%#change all messages to lowercase
   replace_contraction()%>%#remove short form
   replace_word_elongation()%>% #remove the same letter appears unnecessarily, eg.'loooook' to 'look'
-  str_squish()%>% #removes space from start and end of string
-  lemmatize_strings()#perform lemmatization
+  str_squish()%>% #re3moves space from start and end of string
+  lemmatize_strings()%>%#perform lemmatization
+  removeWords(stopwords('english'))#%>%#remove stopwords
 ```
 
 ```{r,echo=TRUE,eval=TRUE}
-#eliminate messages that start with rt @
-clean_text <- raw_text %>%
-  filter(str_detect(clean_message,"^[^rt @]"))
+#2.clean data,remove keywords in the message
+raw_text$clean_message <-raw_text$message %>% 
+  #remove rt @ in the message, replace with""
+  str_replace_all("RT @([A-Za-z]+[A-Za-z0-9_-]+)(?![A-Za-z0-9_]*\\.)","")%>%
+  #remove @ in the message, replace with""
+  str_replace_all("@([A-Za-z]+[A-Za-z0-9_-]+)(?![A-Za-z0-9_]*\\.)","")%>%
+  #remove # in the message, replace with""
+  str_replace_all("#([A-Za-z]+[A-Za-z0-9_]+)(?![A-Za-z0-9_]*\\.)","")%>%
+  #remove stop word:the/The
+  gsub(pattern ='The',replacement = "",raw_text$message)%>%
+  gsub(pattern ='the',replacement = "",raw_text$message)
+```
+
+
+```{r,echo=TRUE,eval=TRUE}
+#stemming message
+pr_stem_words(raw_text,clean_message,language = "english")
+```
+#split into blog and text transcripts of emergency call
+```{r,echo=TRUE,eval=TRUE}
+blog <- filter(raw_text,type=='mbdata')
+call <- filter(raw_text,type=='ccdata') 
+```
+
+#2. text mining and word cloud for blog
+```{r,echo=TRUE,eval=TRUE}
+#text transform: convert dataframe to corpus
+docs <- Corpus(VectorSource(as.character(blog$clean_message)))
+inspect(docs[1:2])
+#build a term-document matrix
+dtm <- TermDocumentMatrix(docs) 
+matrix <- as.matrix(dtm) 
+words <- sort(rowSums(matrix),decreasing=TRUE) 
+# words and frequency dataframe
+df <- data.frame(word = names(words),freq=words)
+#generate word cloud
+set.seed(1234)
+wordcloud(words = df$word, freq = df$freq, min.freq = 10,max.words=300,
+          random.order=FALSE, rot.per=0.35,colors=brewer.pal(8, "Dark2"))
+```
+# 2. text mining and word cloud for call
+```{r,echo=TRUE,eval=TRUE}
+#text transform: convert dataframe to corpus
+docs <- Corpus(VectorSource(as.character(call$clean_message)))
+inspect(docs[1:2])
+#build a term-document matrix
+dtm <- TermDocumentMatrix(docs) 
+matrix <- as.matrix(dtm) 
+words <- sort(rowSums(matrix),decreasing=TRUE) 
+# words and frequency dataframe
+df <- data.frame(word = names(words),freq=words)
+#generate word cloud
+set.seed(1234)
+wordcloud(words = df$word, freq = df$freq, min.freq = 5,max.words=100,
+          random.order=FALSE, rot.per=0.35,colors=brewer.pal(8, "Dark2"))
+```
+
+```{r,echo=TRUE,eval=TRUE}
+#create new column: ID and Time, bin time for every 15 minutes
+blog$ID <- seq.int(nrow(blog))
+blog$time_bin = cut(blog$`date(yyyyMMddHHmmss)`, breaks="60 mins")
+blog$time_bin<-blog$time_bin %>% str_replace_all("2014-01-23","")
+
+blog_topic<-blog%>%
+  group_by(time_bin) %>% 
+  unnest_tokens(word, message) %>%
+  count(word, sort = TRUE)
+```
+
+# The graph below shows the strong correlation from 6pm to 9pm. Overall, the correlation in average is higher than 0.8. It shows the importance of time in the event. We can narrow down the focused time period from 5-9pm to 6-9pm now.
+```{r,echo=TRUE,eval=TRUE}
+#draw a correlation graph to see what are the timing that events are strongly correlated
+blog_cors <- blog_topic %>% pairwise_cor(time_bin,word,n,sort = TRUE)
+
+set.seed(1234)
+blog_cors %>%
+  graph_from_data_frame() %>%
+  ggraph(layout = "fr") +
+  geom_edge_link(aes(alpha = correlation,width = correlation)) +
+  geom_node_point(size = 6,color = "blue") +
+  geom_node_text(aes(label = name),color = "red",repel = TRUE) +
+  ggtitle("Correlation between time")+
+  theme_void()
+```
+# Now we look at the frequent words in each hour and try to extract inccident from it.
+```{r,echo=TRUE,eval=TRUE}
+tf_idf <- blog_topic%>%
+  bind_tf_idf(word,time_bin, n) %>%
+  arrange(desc(tf_idf))
+
+tf_idf %>%
+  group_by(time_bin) %>%
+  slice_max(tf_idf,n =10) %>%
+  ungroup() %>%
+  mutate(word = reorder(word,tf_idf)) %>%
+  ggplot(aes(tf_idf,word,fill = time_bin)) +
+  geom_col(show.legend = FALSE) +
+  facet_wrap(~ time_bin,scales = "free",as.table=TRUE) +
+  labs(x ='mean tf-idf_score',y= NULL) +
+  ggtitle("Term Frequency by hour")
+```
+
+
+```{r,echo=TRUE,eval=TRUE}
+blog_dtm<- blog_topic %>%
+  cast_dtm(time_bin,word,n)
+LDA <- LDA(blog_dtm, k = 10, control = list(seed = 1234))
+ap_topics <- tidy(LDA, matrix = "beta")
+ap_topics
+```
+
+
+
+
+```
+
+```{r,echo=TRUE,eval=TRUE}
 ```
 
