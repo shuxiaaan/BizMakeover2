@@ -293,7 +293,7 @@ callGamma %>%
 ### Zoom in to analyze the changes in the minute unit instead of hour.
 ```{r,echo=TRUE,eval=TRUE}
 blog$mins = cut(blog$`date(yyyyMMddHHmmss)`, breaks="10 min")
-blog$mins<-blog$min %>% str_replace_all("2014-01-23","")
+blog$mins<-blog$mins %>% str_replace_all("2014-01-23","")
 ```
 
 ```{r,echo=TRUE,eval=TRUE}
