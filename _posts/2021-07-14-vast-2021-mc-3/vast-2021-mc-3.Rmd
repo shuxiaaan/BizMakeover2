@@ -4,7 +4,6 @@ description: |
   A short description of the post.
 author:
   - name: Li Shuxian
-    url: https://example.com/norajones
 date: 07-14-2021
 output:
   distill::distill_article:
@@ -16,12 +15,9 @@ output:
 knitr::opts_chunk$set(echo = FALSE)
 ```
 
-Distill is a publication format for scientific and technical writing, native to the web.
-
-Learn more about using Distill at <https://rstudio.github.io/distill>.
-
+#### import packages
 ```{r}
-#import packages
+
 
 packages= c()
 
@@ -42,25 +38,25 @@ for (p in packages){
   library(p,character.only = T)
 }
 ```
-
+#### import data
 ```{r,echo=TRUE,eval=TRUE}
 segment1 <- read_csv('H:/jovina7/BizMakeover2/_posts/2021-07-14-vast-2021-mc-3/data/csv-1700-1830.csv')
 segment2 <- read_csv('H:/jovina7/BizMakeover2/_posts/2021-07-14-vast-2021-mc-3/data/csv-1831-2000.csv')
 segment3 <-read_csv('H:/jovina7/BizMakeover2/_posts/2021-07-14-vast-2021-mc-3/data/csv-2001-2131.csv')
 ```
-
+#### combine all these 3 segments data together 
 ```{r,echo=TRUE,eval=TRUE}
-#combine all these 3 segments data together 
+
 raw_text <- rbind(segment1,segment2,segment3)
 ```
 
+#### Wrangling time
 ```{r,echo=TRUE,eval=TRUE}
-#Wrangling time
 raw_text$`date(yyyyMMddHHmmss)`<-ymd_hms(raw_text$`date(yyyyMMddHHmmss)`)
 ```
 
+#### 1.1 clean data,raw_text
 ```{r,echo=TRUE,eval=TRUE}
-#1.clean data,raw_text
 raw_text$clean_message <-raw_text$message%>%
   tolower()%>%#change all messages to lowercase
   replace_contraction()%>%#remove short form
@@ -70,32 +66,49 @@ raw_text$clean_message <-raw_text$message%>%
   removeWords(stopwords('english'))#%>%#remove stopwords
 ```
 
+#### 1.2 clean data,remove keywords in the message - these messages are identified as junk messages
 ```{r,echo=TRUE,eval=TRUE}
-#2.clean data,remove keywords in the message
 raw_text$clean_message <-raw_text$message %>% 
   #remove rt @ in the message, replace with""
   str_replace_all("RT @([A-Za-z]+[A-Za-z0-9_-]+)(?![A-Za-z0-9_]*\\.)","")%>%
+  str_replace_all("rt @([A-Za-z]+[A-Za-z0-9_-]+)(?![A-Za-z0-9_]*\\.)","")%>%
   #remove @ in the message, replace with""
   str_replace_all("@([A-Za-z]+[A-Za-z0-9_-]+)(?![A-Za-z0-9_]*\\.)","")%>%
   #remove # in the message, replace with""
   str_replace_all("#([A-Za-z]+[A-Za-z0-9_]+)(?![A-Za-z0-9_]*\\.)","")%>%
-  #remove stop word:the/The
+  #remove stop word:the/The/to/ of / is/ in /you /and/ have/ at /are /for/ on/your/ it/ that /be with /more 
   gsub(pattern ='The',replacement = "",raw_text$message)%>%
-  gsub(pattern ='the',replacement = "",raw_text$message)
+  gsub(pattern ='the',replacement = "",raw_text$message)%>%
+  gsub(pattern ='to',replacement = "",raw_text$message)%>%
+  gsub(pattern ='of',replacement = "",raw_text$message)%>%
+  gsub(pattern ='is',replacement = "",raw_text$message)%>%
+  gsub(pattern ='in',replacement = "",raw_text$message)%>%
+  gsub(pattern ='you',replacement = "",raw_text$message)%>%
+  gsub(pattern ='your',replacement = "",raw_text$message)%>%
+  gsub(pattern ='and',replacement = "",raw_text$message)%>%
+  gsub(pattern ='have',replacement = "",raw_text$message)%>%
+  gsub(pattern ='at',replacement = "",raw_text$message)%>%
+  gsub(pattern ='are',replacement = "",raw_text$message)%>%
+  gsub(pattern ='for',replacement = "",raw_text$message)%>%
+   gsub(pattern ='on',replacement = "",raw_text$message)%>%
+  gsub(pattern ='it',replacement = "",raw_text$message)%>%
+  gsub(pattern ='that',replacement = "",raw_text$message)%>%
+  gsub(pattern ='be',replacement = "",raw_text$message)%>%
+  gsub(pattern ='with',replacement = "",raw_text$message)%>%
+  gsub(pattern ='more',replacement = "",raw_text$message)
 ```
 
-
+#### 1.3 stemming message
 ```{r,echo=TRUE,eval=TRUE}
-#stemming message
 pr_stem_words(raw_text,clean_message,language = "english")
 ```
-#split into blog and text transcripts of emergency call
+#### 1.4 split into blog and text transcripts of emergency call
 ```{r,echo=TRUE,eval=TRUE}
 blog <- filter(raw_text,type=='mbdata')
 call <- filter(raw_text,type=='ccdata') 
 ```
 
-#2. text mining and word cloud for blog
+### 1.5 data explore: text mining and word cloud for blog
 ```{r,echo=TRUE,eval=TRUE}
 #text transform: convert dataframe to corpus
 docs <- Corpus(VectorSource(as.character(blog$clean_message)))
@@ -111,7 +124,10 @@ set.seed(1234)
 wordcloud(words = df$word, freq = df$freq, min.freq = 10,max.words=300,
           random.order=FALSE, rot.per=0.35,colors=brewer.pal(8, "Dark2"))
 ```
-# 2. text mining and word cloud for call
+
+### There are some stopword should be removed seeing from the word cloud graph. They are: to, of, a, i,s in, you, and, have, at, are, for, on, i, your, it, that, be, with, more. 
+
+### 1.6 data explore: text mining and word cloud for call
 ```{r,echo=TRUE,eval=TRUE}
 #text transform: convert dataframe to corpus
 docs <- Corpus(VectorSource(as.character(call$clean_message)))
@@ -127,20 +143,20 @@ set.seed(1234)
 wordcloud(words = df$word, freq = df$freq, min.freq = 5,max.words=100,
           random.order=FALSE, rot.per=0.35,colors=brewer.pal(8, "Dark2"))
 ```
-
+## Question 1. Using visual analytics, characterize the different types of content in the dataset. What distinguishes meaningful event reports from typical chatter from junk or spam? Please limit your answer to 8 images and 500 words.
 ```{r,echo=TRUE,eval=TRUE}
-#create new column: ID and Time, bin time for every 15 minutes
+#create new column: ID and Time, bin time for every hour for blog
 blog$ID <- seq.int(nrow(blog))
 blog$time_bin = cut(blog$`date(yyyyMMddHHmmss)`, breaks="60 mins")
 blog$time_bin<-blog$time_bin %>% str_replace_all("2014-01-23","")
 
 blog_topic<-blog%>%
   group_by(time_bin) %>% 
-  unnest_tokens(word, message) %>%
+  unnest_tokens(word, clean_message) %>%
   count(word, sort = TRUE)
 ```
 
-# The graph below shows the strong correlation from 6pm to 9pm. Overall, the correlation in average is higher than 0.8. It shows the importance of time in the event. We can narrow down the focused time period from 5-9pm to 6-9pm now.
+### The graph below shows the strong correlation from 6pm to 9pm. Overall, the correlation in average is higher than 0.8. It shows the importance of time in the event. We can narrow down the focused time period from 5-9pm to 6-9pm now.
 ```{r,echo=TRUE,eval=TRUE}
 #draw a correlation graph to see what are the timing that events are strongly correlated
 blog_cors <- blog_topic %>% pairwise_cor(time_bin,word,n,sort = TRUE)
@@ -155,7 +171,7 @@ blog_cors %>%
   ggtitle("Correlation between time")+
   theme_void()
 ```
-# Now we look at the frequent words in each hour and try to extract inccident from it.
+### Now we look at the frequent words in each hour and try to extract inccident from it.
 ```{r,echo=TRUE,eval=TRUE}
 tf_idf <- blog_topic%>%
   bind_tf_idf(word,time_bin, n) %>%
@@ -170,22 +186,128 @@ tf_idf %>%
   geom_col(show.legend = FALSE) +
   facet_wrap(~ time_bin,scales = "free",as.table=TRUE) +
   labs(x ='mean tf-idf_score',y= NULL) +
-  ggtitle("Term Frequency by hour")
+  ggtitle("Blog Term Frequency by hour")
 ```
+#### From the TF bar chart above,there are a few events we can make a guess.  
+#### Event 1,there was a fire happened at appartment: dancing dolphin at 6 pm.Neighborhood evacuations started around 7pm. Firefighter came around 8pm and was injured. The fire caused explosion at 9pm.Suspects of arsonist were arrested.   
+#### Event 2,there was a shot fired by officer at 7 pm. 
+#### Event 3, probably there was a car/van accident at 7pm.
+
+
+
+### word cloud by hour for blog
+```{r,echo=TRUE,eval=TRUE}
+set.seed(1234)
+blog_topic %>%
+  group_by(time_bin) %>% 
+  slice_max(order_by = n, n = 100) %>% 
+ggplot(aes(label = word,size = n,col = as.character(n))) +
+  geom_text_wordcloud() +
+  theme_minimal() +
+  ggtitle("Blog:Word Cloud by hour")+
+  facet_wrap(~time_bin)
+```
+#### From the word cloud above, words like "the","and","a","is" are ignored. 
+#### All these keywords are supported evidence for those events mentioned previously.
+#### 1."Pokrally" is certainly a important word over the hours. Given the background information, it is a gathering from organization Protectors of Kronos.This is one more event detected from word cloud.
+#### 2."Kronosstar" and "abilapost" are highly frequent term. It is an author name which means it is either he post a lot or he is an influencer and being retweet a lot.
+
+
+### Extract per-topic-per-word probabilities β/beta from the model. The higher the value, the more significant the words are to the topic.Then run a topic modeling LDA to extract keywords.Use gamma to assign each document to a topic. 
+```{r,echo=TRUE,eval=TRUE}
+blogDTM <-blog_topic%>%cast_dtm(time_bin,word,n)
+blogLDA <-LDA(blogDTM, k = 20, control = list(seed = 1234))
+topicProb <- tidy(blogLDA, matrix = "beta")
+topicProb
+```
+```{r,echo=TRUE,eval=TRUE}
+blogGamma<-tidy(blogLDA, matrix = "gamma")%>%group_by(document)
+blogGamma %>%
+  mutate(title = reorder(document, gamma * topic)) %>%
+  ggplot(aes(factor(topic), gamma)) +
+  geom_boxplot() +
+  ggtitle("Blog:Topic Distribution over time")+
+  facet_wrap(~ title)
+```  
+#This graph help us to determine the influence of each event.It is determined significant topic when their gamma score is greater than 0.3. At 5 pm, topic 6,9,19 are the ones. Extract useful words from topic them,we can determine it is pokrally (start of event 5).At 6pm, topic 13 shoots to the top and reaches peak among the 4 hours. The word "abila" raised the attention. They are participants for event 2 (fire)
+At 6pm, topic 3,8,10 are hot topics. Key words are "pokrally" and "kronosstar".At 7pm, topic 1 and 13 are trendy topics which has the same content as previous. 
 
 
 ```{r,echo=TRUE,eval=TRUE}
-blog_dtm<- blog_topic %>%
-  cast_dtm(time_bin,word,n)
-LDA <- LDA(blog_dtm, k = 10, control = list(seed = 1234))
-ap_topics <- tidy(LDA, matrix = "beta")
-ap_topics
+Topic <- topicProb %>%
+  group_by(topic) %>%
+  slice_max(beta, n =15) %>% 
+  ungroup() %>%
+  arrange(topic, -beta)
+
+ap_top_terms %>%
+  mutate(term = reorder_within(term, beta, topic)) %>%
+  ggplot(aes(beta, term, fill = factor(topic))) +
+  geom_col(show.legend = FALSE) +
+  facet_wrap(~ topic, scales = "free") +
+  scale_y_reordered()
+```
+
+### Repeat the same step for calls.
+```{r,echo=TRUE,eval=TRUE}
+#create new column: ID and Time, bin time for every hour for call
+call$ID <- seq.int(nrow(call))
+call$time_bin = cut(call$`date(yyyyMMddHHmmss)`, breaks="60 mins")
+call$time_bin<-call$time_bin %>% str_replace_all("2014-01-23","")
+
+call_topic<-call%>%
+  group_by(time_bin) %>% 
+  unnest_tokens(word, message) %>%
+  count(word, sort = TRUE)
+```
+
+
+### word cloud by hour for call
+```{r,echo=TRUE,eval=TRUE}
+set.seed(1234)
+call_topic %>%
+  group_by(time_bin) %>% 
+  slice_max(order_by = n, n = 20) %>% 
+ggplot(aes(label = word,size = n,col = as.character(n))) +
+  geom_text_wordcloud() +
+  theme_minimal() +
+  ggtitle("Call:Word Cloud by hour")+
+  facet_wrap(~time_bin)
+```
+```{r,echo=TRUE,eval=TRUE}
+callDTM <-call_topic%>%cast_dtm(time_bin,word,n)
+callLDA <-LDA(callDTM, k = 20, control = list(seed = 1234))
+topicProb <- tidy(callLDA, matrix = "beta")
+topicProb
+
+callGamma<-tidy(callLDA, matrix = "gamma")%>%group_by(document)
+callGamma %>%
+  mutate(title = reorder(document, gamma * topic)) %>%
+  ggplot(aes(factor(topic), gamma)) +
+  geom_boxplot() +
+  ggtitle("Call:Topic Distribution over time")+
+  facet_wrap(~ title)
+```
+## Qn2:Use visual analytics to represent and evaluate how the level of the risk to the public evolves over the course of the evening. Consider the potential consequences of the situation and the number of people who could be affected. Please limit your answer to 10 images and 1000 words.
+
+### Zoom in to analyze the changes in the minute unit instead of hour.
+```{r,echo=TRUE,eval=TRUE}
+blog$mins = cut(blog$`date(yyyyMMddHHmmss)`, breaks="10 min")
+blog$mins<-blog$min %>% str_replace_all("2014-01-23","")
+```
+
+```{r,echo=TRUE,eval=TRUE}
+blog%>%
+  group_by(mins) %>%
+  summarise(number = n()) %>%
+  ggplot(aes(y=number, x=mins)) +
+  geom_point(color='red',size=3)+
+  ggtitle("No of Blog over time by minutes")
 ```
 
 
 
 
-```
 
 ```{r,echo=TRUE,eval=TRUE}
 ```
