@@ -392,10 +392,31 @@ The image above compares number of blog posted change over time. Both gunfire an
 
 #### Question 3.If you were able to send a team of first responders to any single place, where would it be? Provide your rationale. How might your response be different if you had to respond to the events in real time rather than retrospectively?
 
-If I were able to send a team of first responders to any single place, I would send them to the dolphin dancing apartment to stop fire before it gets bigger. Even we can catch fire starts to stop the fire at the first place. 
+If I were able to send a team of first respondents to any single place, I would send them to the dolphin dancing apartment to stop fire before it gets bigger. Even we can catch fire starts to stop the fire at the first place. Because we already knew more people injured even fire fighters. There would be a explosion later which caused more damaged to property and is life-threatening. 
 
+```{r,echo=TRUE,eval=TRUE}
+blog$minn = cut(blog$`date(yyyyMMddHHmmss)`, breaks="1 min")#break them into every minute
+blog$minn<-blog$minn %>% str_replace_all("2014-01-23","")
 
+apartment<-st_read('data/Geospatial/Abila.shp',quiet=TRUE)
+data_location <- blog %>% 
+  filter(longitude!="" ) %>% 
+  add_count(longitude,latitude,author)
+dangermice <- data_location %>% 
+  filter(author=="dangermice" ) %>% 
+  select(minn,clean_message,longitude,latitude) 
 
+apartment_map<-ggplot()+
+  geom_sf(data=apartment,size=0.8,fill="cyan1")+
+  ggtitle("Fire in Dancing Dolphin Apartment at 6:40pm ")+
+  coord_sf()+
+  theme(panel.background = element_rect(fill = "transparent"), # add panel background
+    plot.background = element_rect(fill = "transparent", color = NA), # add plot background
+    axis.title.y=element_blank(),axis.title.x =element_blank()) +
+  geom_point(data = dangermice, aes(x = longitude,y=latitude),color="red",size=5) #add point to show apartment
+apartment_map
+```
+This graph shows both longitude and latitude which enbale us to trace location of the apartment.
 
 #### 4. Literature_Review
 
