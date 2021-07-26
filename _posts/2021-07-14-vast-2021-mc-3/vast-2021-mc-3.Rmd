@@ -421,10 +421,12 @@ This graph shows both longitude and latitude which enbale us to trace location o
 #### 4. Literature_Review
 
 ![](image/2.png){width=80%}
+
 This figure from IIIT,2014 inspired me to seek for impact of several incident from the event perspective.
 (https://www.cs.umd.edu/hcil/varepository/VAST%20Challenge%202014/challenges/MC3%20-%20Real-Time,%20Streaming%20Social%20Media/entries/International%20Institute%20of%20Information%20and%20Technology%20-%20Hyderabad/)
 
 ![](image/3.png){width=80%}
+
 Moreover,this timeline graph from TJU 2014 reminds me the importance of timeframe. It is important to divide events and have a clear timeline of things happened.  
 (http://visualdata.wustl.edu/varepository/VAST%20Challenge%202014/challenges/MC3%20-%20Real-Time,%20Streaming%20Social%20Media/entries/Tianjin%20University/)
 
