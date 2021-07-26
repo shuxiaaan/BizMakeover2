@@ -143,7 +143,7 @@ set.seed(1234)
 wordcloud(words = df$word, freq = df$freq, min.freq = 5,max.words=100,
           random.order=FALSE, rot.per=0.35,colors=brewer.pal(8, "Dark2"))
 ```
-### Question 1. Using visual analytics, characterize the different types of content in the dataset. What distinguishes meaningful event reports from typical chatter from junk or spam? Please limit your answer to 8 images and 500 words.
+#### Question 1. Using visual analytics, characterize the different types of content in the dataset. What distinguishes meaningful event reports from typical chatter from junk or spam? Please limit your answer to 8 images and 500 words.
 ```{r,echo=TRUE,eval=TRUE}
 #create new column: ID and Time, bin time for every hour for blog
 blog$ID <- seq.int(nrow(blog))
@@ -298,7 +298,7 @@ callGamma %>%
 ```
 To conclude insights from question 1, there are 4 events found: pok rally starts at 5pm. Fire started between 6 to 7pm at dancing dolphin. After 7pm, evacuations started as the fire got worst. Even the fire fighter injured. Meanwhile, a black van hit a car caused accident.Lastly, the fire caused explosion and suspects for the fire was arrested. 
 
-#### Qn2:Use visual analytics to represent and evaluate how the level of the risk to the public evolves over the course of the evening. Consider the potential consequences of the situation and the number of people who could be affected. Please limit your answer to 10 images and 1000 words.
+#### Question 2:Use visual analytics to represent and evaluate how the level of the risk to the public evolves over the course of the evening. Consider the potential consequences of the situation and the number of people who could be affected. Please limit your answer to 10 images and 1000 words.
 
 ###### Zoom in to analyze the changes in the minute unit instead of hour.
 ```{r,echo=TRUE,eval=TRUE}
@@ -388,6 +388,22 @@ plot_ly(data = VAN,
 ```
 
 ![](image/post.png){width=100%}
-From the image above, 
+The image above compares number of blog posted change over time. Both gunfire and fire event has more attention than others. Clearly netizen are very active around 6:40 and 7:40 pm. 
 
+#### Question 3.If you were able to send a team of first responders to any single place, where would it be? Provide your rationale. How might your response be different if you had to respond to the events in real time rather than retrospectively?
+
+If I were able to send a team of first responders to any single place, I would send them to the dolphin dancing apartment to stop fire before it gets bigger. Even we can catch fire starts to stop the fire at the first place. 
+
+
+
+
+#### 4. Literature_Review
+
+![](image/2.png){width=80%}
+This figure from IIIT,2014 inspired me to seek for impact of several incident from the event perspective.
+(https://www.cs.umd.edu/hcil/varepository/VAST%20Challenge%202014/challenges/MC3%20-%20Real-Time,%20Streaming%20Social%20Media/entries/International%20Institute%20of%20Information%20and%20Technology%20-%20Hyderabad/)
+
+![](image/3.png){width=80%}
+Moreover,this timeline graph from TJU 2014 reminds me the importance of timeframe. It is important to divide events and have a clear timeline of things happened.  
+(http://visualdata.wustl.edu/varepository/VAST%20Challenge%202014/challenges/MC3%20-%20Real-Time,%20Streaming%20Social%20Media/entries/Tianjin%20University/)
 
