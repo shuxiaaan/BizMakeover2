@@ -300,7 +300,7 @@ To conclude insights from question 1, there are 4 events found: pok rally starts
 
 #### Qn2:Use visual analytics to represent and evaluate how the level of the risk to the public evolves over the course of the evening. Consider the potential consequences of the situation and the number of people who could be affected. Please limit your answer to 10 images and 1000 words.
 
-Zoom in to analyze the changes in the minute unit instead of hour.
+###### Zoom in to analyze the changes in the minute unit instead of hour.
 ```{r,echo=TRUE,eval=TRUE}
 blog$mins = cut(blog$`date(yyyyMMddHHmmss)`, breaks="10 min")
 blog$mins<-blog$mins %>% str_replace_all("2014-01-23","")
@@ -316,21 +316,78 @@ datatable(count,class='mins',style = "default", width =NULL, height = NULL,
 Number of blog posted over time is shown above. Intensive discussion happened in 5:10-5:20 pm. It increased rapidly in 6:40 - 7:00 which is the time fire started.7:40pm, blog posted exceed 400 and it is the highest among all. 
 
 ```{r,echo=TRUE,eval=TRUE}
-
-```
-```{r,echo=TRUE,eval=TRUE}
-
+call$mins = cut(call$`date(yyyyMMddHHmmss)`, breaks="10 min")
+call$mins<-call$mins %>% str_replace_all("2014-01-23","")
 ```
 
 ```{r,echo=TRUE,eval=TRUE}
+count<-call%>%
+  group_by(mins) %>%
+  summarise(number = n())
+datatable(count,class='mins',style = "default", width =NULL, height = NULL,
+          elementId = NULL,colnames=c('Time', 'No of Emergency Call'))
+```
+Rank number of calls in descending order, it is found that most of the calls made around 7:40pm. This is the timing where gunshot or the car accident happened.
 
+###### To continue,I would like to explore distraction impact of these events from pok rally. These selected authors are members from POK such as POK leader Sylvia. 
+```{r,echo=TRUE,eval=TRUE}
+POKrally<-blog%>%filter(str_detect(author,'KronosStar')|
+                              str_detect(author,'POK')|
+                              str_detect(author,'AbilaPost')|    
+                              str_detect(author,'FriendsOfKronos'))%>%
+  group_by(mins) %>%
+  summarise(number = n()) 
+plot_ly(data = POKrally,
+        x = ~mins,
+        y = ~number,
+        marker = list(color = "orange"),
+        colors = "black")%>%
+  layout(title = 'Pok Park Rally Event')
 ```
 
 ```{r,echo=TRUE,eval=TRUE}
+FIRE<-blog%>%filter(str_detect(message,'dancingdolphin')|
+                              str_detect(message,'dancing dolphin')|
+                              str_detect(message,'DancingDolphin')|    
+                              str_detect(message,'Dancing Dolphin'))%>%
+  group_by(mins) %>%
+  summarise(number = n()) 
+plot_ly(data = FIRE,
+        x = ~mins,
+        y = ~number,
+        marker = list(color = "black"),
+        colors = "dark green")%>%
+  layout(title = 'Fire at Dancing Dolphin Event')
 
 ```
-
 ```{r,echo=TRUE,eval=TRUE}
+Gun<-blog%>%filter(str_detect(message,'gun fire')|
+                              str_detect(message,'gunfire')|
+                              str_detect(message,'Gun Fire')|    
+                              str_detect(message,'GUNFIRE'))%>%
+  group_by(mins) %>%
+  summarise(number = n()) 
+plot_ly(data = FIRE,
+        x = ~mins,
+        y = ~number,
+        colors = "dark ORANGE")%>%
+  layout(title = 'Gunfire Event')
 
 ```
+```{r,echo=TRUE,eval=TRUE}
+VAN<-blog%>%filter(str_detect(message,'VAN')|str_detect(message,'van'))%>%
+  group_by(mins) %>%
+  summarise(number = n()) 
+plot_ly(data = VAN,
+        x = ~mins,
+        y = ~number,
+        marker = list(color = "green"),
+        colors = "dark green")%>%
+  layout(title = 'Black Van Accident Event')
+
+```
+
+![](image/post.png){width=100%}
+From the image above, 
+
 
