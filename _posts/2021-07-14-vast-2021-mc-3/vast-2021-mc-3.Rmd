@@ -1,7 +1,7 @@
 ---
 title: "Vast 2021 MC 3"
 description: |
-  A short description of the post.
+  Visual analytics assignment: mini challenge 3
 author:
   - name: Li Shuxian
 date: 07-14-2021
@@ -171,7 +171,7 @@ blog_cors %>%
   ggtitle("Correlation between time")+
   theme_void()
 ```
-#### The graph above shows the strong correlation from 6pm to 9pm. Overall, the correlation in average is higher than 0.8. It shows the importance of time in the event. We can narrow down the focused time period from 5-9pm to 6-9pm now.
+The graph above shows the strong correlation from 6pm to 9pm. Overall, the correlation in average is higher than 0.8. It shows the importance of time in the event. We can narrow down the focused time period from 5-9pm to 6-9pm now.
 
 #### Now we look at the frequent words in each hour and try to extract inccident from it.
 ```{r,echo=TRUE,eval=TRUE}
@@ -207,10 +207,10 @@ ggplot(aes(label = word,size = n,col = as.character(n))) +
   ggtitle("Blog:Word Cloud by hour")+
   facet_wrap(~time_bin)
 ```
-#### From the word cloud above, words like "the","and","a","is" are ignored. 
-#### All these keywords are supported evidence for those events mentioned previously.
-#### 1."Pokrally" is certainly a important word over the hours. Given the background information, it is a gathering from organization Protectors of Kronos.This is one more event detected from word cloud.
-#### 2."Kronosstar" and "abilapost" are highly frequent term. It is an author name which means it is either he post a lot or he is an influencer and being retweet a lot.
+From the word cloud above, words like "the","and","a","is" are ignored. 
+All these keywords are supported evidence for those events mentioned previously.
+1."Pokrally" is certainly a important word over the hours. Given the background information, it is a gathering from organization Protectors of Kronos.This is one more event detected from word cloud.
+2."Kronosstar" and "abilapost" are highly frequent term. It is an author name which means it is either he post a lot or he is an influencer and being retweet a lot.
 
 
 #### Extract per-topic-per-word probabilities β/beta from the model. The higher the value, the more significant the words are to the topic.Then run a topic modeling LDA to extract keywords.Use gamma to assign each document to a topic. 
@@ -229,8 +229,7 @@ blogGamma %>%
   ggtitle("Blog:Topic Distribution over time")+
   facet_wrap(~ title)
 ```  
-#### 'This graph help us to determine the influence of each event.It is determined significant topic when their gamma score is greater than 0.3. At 5 pm, topic 6,9,19 are the ones. Extract useful words from topic them,we can determine it is pokrally (start of event 5).At 6pm, topic 13 shoots to the top and reaches peak among the 4 hours. The word "abila" raised the attention. They are participants for event 2 (fire).At 6pm, topic 3,8,10 are hot topics. Key words are "pokrally" and "kronosstar".At 7pm, topic 1 and 13 are trendy topics which has the same content as previous.' 
-
+This graph help us to determine the influence of each event.It is determined significant topic when their gamma score is greater than 0.3. At 5 pm, topic 6,9,19 are the ones. Extract useful words from topic them,we can determine it is pokrally (start of event 5).At 6pm, topic 13 shoots to the top and reaches peak among the 4 hours. The word "abila" raised the attention. They are participants for event 2 (fire).At 6pm, topic 3,8,10 are hot topics. Key words are "pokrally" and "kronosstar".At 7pm, topic 1 and 13 are trendy topics which has the same content as previous.
 
 ```{r,echo=TRUE,eval=TRUE}
 Topic <- topicProb %>%
@@ -246,9 +245,14 @@ Topic %>%
   ggplot(aes(beta, term, fill = factor(topic))) +
   geom_col(show.legend = FALSE) +
   facet_wrap(~ topic, scales = "free") +
-  scale_y_reordered()
+  scale_y_reordered()+
+  ggtitle("Blog:Topic Modeling")+
   warnings()
 ```
+Crime: appear in topic 1,2,3,5,15,16.
+Traffic: appear in topic 1,2,4,8,9,10,11,12,14,17,18,19,20.
+There are multiple words appear in multiple topics. It shows the importance to plot the graph by time. 
+Between 6-7pm, topic 13 shows in the peak of the graph. Key words about the car accidents are extracted: a black van vehicle hit someone/a car.
 
 ### Repeat the same step for calls.
 ```{r,echo=TRUE,eval=TRUE}
@@ -276,6 +280,8 @@ ggplot(aes(label = word,size = n,col = as.character(n))) +
   ggtitle("Call:Word Cloud by hour")+
   facet_wrap(~time_bin)
 ```
+From word cloud of emergency call, the word "stop" appeared frequently. It is assumed people who stayed nearby dancing dolphin might call fire fighting hotline to stop the fires.
+ 
 ```{r,echo=TRUE,eval=TRUE}
 callDTM <-call_topic%>%cast_dtm(time_bin,word,n)
 callLDA <-LDA(callDTM, k = 20, control = list(seed = 1234))
@@ -290,27 +296,41 @@ callGamma %>%
   ggtitle("Call:Topic Distribution over time")+
   facet_wrap(~ title)
 ```
-## Qn2:Use visual analytics to represent and evaluate how the level of the risk to the public evolves over the course of the evening. Consider the potential consequences of the situation and the number of people who could be affected. Please limit your answer to 10 images and 1000 words.
+To conclude insights from question 1, there are 4 events found: pok rally starts at 5pm. Fire started between 6 to 7pm at dancing dolphin. After 7pm, evacuations started as the fire got worst. Even the fire fighter injured. Meanwhile, a black van hit a car caused accident.Lastly, the fire caused explosion and suspects for the fire was arrested. 
 
-### Zoom in to analyze the changes in the minute unit instead of hour.
+#### Qn2:Use visual analytics to represent and evaluate how the level of the risk to the public evolves over the course of the evening. Consider the potential consequences of the situation and the number of people who could be affected. Please limit your answer to 10 images and 1000 words.
+
+Zoom in to analyze the changes in the minute unit instead of hour.
 ```{r,echo=TRUE,eval=TRUE}
 blog$mins = cut(blog$`date(yyyyMMddHHmmss)`, breaks="10 min")
 blog$mins<-blog$mins %>% str_replace_all("2014-01-23","")
 ```
 
 ```{r,echo=TRUE,eval=TRUE}
-blog%>%
+count<-blog%>%
   group_by(mins) %>%
-  summarise(number = n()) %>%
-  ggplot(aes(y=number, x=mins)) +
-  geom_point(color='red',size=3)+
-  ggtitle("No of Blog over time by minutes")
+  summarise(number = n())
+datatable(count,class='mins',style = "default", width =NULL, height = NULL,
+          elementId = NULL,colnames=c('Time', 'No of Blog Posted'))
 ```
-
-
-
-
+Number of blog posted over time is shown above. Intensive discussion happened in 5:10-5:20 pm. It increased rapidly in 6:40 - 7:00 which is the time fire started.7:40pm, blog posted exceed 400 and it is the highest among all. 
 
 ```{r,echo=TRUE,eval=TRUE}
+
+```
+```{r,echo=TRUE,eval=TRUE}
+
+```
+
+```{r,echo=TRUE,eval=TRUE}
+
+```
+
+```{r,echo=TRUE,eval=TRUE}
+
+```
+
+```{r,echo=TRUE,eval=TRUE}
+
 ```
 
